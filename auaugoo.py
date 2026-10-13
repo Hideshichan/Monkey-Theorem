@@ -1,3 +1,7 @@
-arr = [1,2,2,4,412,4515,132,523,23,325,235,2]
-giahgoaohja = 5
-print(arr[-giahgoaohja +1:])
+num = 87564324567890
+
+print(str(num))
+print(list(str(num)).append(6))
+num2 = list(str(num)).insert(1,".")
+
+print(num2)

@@ -6,13 +6,21 @@ from os import cpu_count
 
 
 # constants that will not change in the middle of the script
-TARGET_WORD = "i chimp, therefore i am"
+TARGET_WORD = "nate is a chud"
 TARGET_WORD = TARGET_WORD.upper()
 TARGET_CHARS = np.array(list(TARGET_WORD), dtype=str)
 WINDOW_SIZE = len(TARGET_WORD)
 CHARACTERS_PER_CYCLE = 10000000
 LIST_OF_CHARS = np.array(list("ABCDEFGHIJKLMNOPQRSTUVWXYZ ,.'"), dtype=str)
 
+# function to prettify
+def convert_to_letter_suffix(pNUM):
+    letters = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "De"]
+    # index goes 0 1 2 3 4 6 7 8 9 10 11
+    # need exp go 0 3 6 9 12 15 18 21 24 27 30 33
+    for index, suffix in enumerate(letters):
+        if pNUM / (10 ** (index * 3)) < 1000:
+            return str(round(pNUM / (10 ** (index * 3)))) + letters[index]
 
 # main function
 def gen_and_test(pCHARS, pTARGET, pWINSIZE, pCPC, pFLAG):
@@ -45,9 +53,6 @@ def gen_and_test(pCHARS, pTARGET, pWINSIZE, pCPC, pFLAG):
             # fetch end of last array to stick on start of new array
             end_of_last_rng = random_chars[-pWINSIZE + 1:]
             chars_genned += pCPC
-            if chars_genned % 1000000000 == 0:
-                print(f"reached {chars_genned // 1000000000}b chars genned without a match")
-        #print(identical_check)
         
         
 # order is:
@@ -58,22 +63,25 @@ collected_data = []
 trackers = []
 
 if __name__ == "__main__":
-    print(f"Estimated probability is 1/{len(LIST_OF_CHARS) ** len(TARGET_CHARS):,} or 1/{len(LIST_OF_CHARS ** len(TARGET_CHARS)):.2e}")
-    mp_manager = mp.Manager()
-    shared_flag = mp_manager.Event()
-    worker_count = cpu_count()
-    worker_pool = mp.Pool(worker_count)
-    for i in range(worker_count):
-        print(f"Creating worker {i + 1}")
-        process = worker_pool.apply_async(gen_and_test, (LIST_OF_CHARS, TARGET_CHARS, WINDOW_SIZE, CHARACTERS_PER_CYCLE, shared_flag))
-        trackers.append(process)
+    try:
+        print(f"Estimated probability is 1/{len(LIST_OF_CHARS) ** len(TARGET_CHARS):,} or 1/{convert_to_letter_suffix(len(LIST_OF_CHARS) ** len(TARGET_CHARS))}")
+        mp_manager = mp.Manager()
+        shared_flag = mp_manager.Event()
+        worker_count = cpu_count()
+        worker_pool = mp.Pool(worker_count)
+        print(f"Creating workers...")
+        for i in range(worker_count):
+            process = worker_pool.apply_async(gen_and_test, (LIST_OF_CHARS, TARGET_CHARS, WINDOW_SIZE, CHARACTERS_PER_CYCLE, shared_flag))
+            trackers.append(process)
+            
+        print("Workers created. Searching...")
 
-    for tracker in trackers:
-        collected_data.append(tracker.get())
+        for tracker in trackers:
+            collected_data.append(tracker.get())
 
-    for item in collected_data:
-        if item[0] == True:
-            print(f"!! found true in {item} !!")
-            break
-
-# check which ones tuple starts with True as that one found the target
+        for item in collected_data:
+            if item[0] == True:
+                print(f"!! found true in {item} !!")
+                break
+    except KeyboardInterrupt as e:
+        print("Ended by user manually")
