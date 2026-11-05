@@ -7,7 +7,7 @@ from time import time
 
 
 # constants that will not change in the middle of the script
-TARGET_WORD = "bananas"
+TARGET_WORD = "banan"
 TARGET_WORD = TARGET_WORD.upper()
 TARGET_CHARS = np.array(list(TARGET_WORD), dtype=str)
 WINDOW_SIZE = len(TARGET_WORD)
@@ -33,8 +33,8 @@ def gen_and_test(pCHARS, pTARGET, pWINSIZE, pCPC, pFLAG):
     while True:
         # check pFLAG to not waste resources on genning a new batch when the target has already been found
         if pFLAG.is_set():
-            # Returns as (Found: int, Chars_genned: int, start_time: int, end_time: int)
-            return (False, pTARGET, None, None, None) # Didnt find it so cant return a index, characters genned or times, so they are None
+            # Returns as (Found: int,  Chars_genned: int, start_time: int, end_time: int)
+            return (False, None, None, None) # Didnt find it so cant return a index, characters genned or times, so they are None
             break
         
         random_chars = rng.choice(pCHARS, pCPC)
@@ -48,7 +48,7 @@ def gen_and_test(pCHARS, pTARGET, pWINSIZE, pCPC, pFLAG):
             pFLAG.set()
             found_index = np.where(identical_check)[0][0]
             fixed_chars_genned = chars_genned + found_index
-            return (True, pTARGET,  fixed_chars_genned, start_time, end_time)
+            return (True, fixed_chars_genned, start_time, end_time)
             break
         else:
             #print("no match")
@@ -65,6 +65,7 @@ collected_data = []
 trackers = []
 
 if __name__ == "__main__":
+    # HOLY MOLY ADD COMMENTS HERE PLEASE BRO (and add code blocking)
     try:
         large_number_probability = len(LIST_OF_CHARS) ** len(TARGET_CHARS)
         print(f"Estimated probability is 1/{large_number_probability:,} or 1/{convert_to_letter_suffix(large_number_probability)}")
@@ -84,9 +85,9 @@ if __name__ == "__main__":
 
         for item in collected_data:
             if item[0] == True:
-                genned_chars = item[2]
-                start = item[3]
-                end = item[4]
+                genned_chars = item[1]
+                start = item[2]
+                end = item[3]
                 print(f"!! Found positive result in process {collected_data.index(item)} !!")
                 print(f"Time to find: {end - start:.2f}s, characters generated: {genned_chars:,} ({convert_to_letter_suffix(genned_chars)})")
                 # Add in an under/over odds thing here (20b pred 5b gen = 4x under. 20b pred, 100b gen = 5x over)
