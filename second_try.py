@@ -31,9 +31,10 @@ def gen_and_test(pCHARS, pTARGET, pWINSIZE, pCPC, pFLAG):
     chars_genned = 0
     end_of_last_rng = np.array([], dtype=str)
     while True:
-        # check pFLAG to not waste resources on genning a new batch
+        # check pFLAG to not waste resources on genning a new batch when the target has already been found
         if pFLAG.is_set():
-            return (False, pTARGET, None, None) # Didnt find it so cant return a index or characters genned, so they are None
+            # Returns as (Found: int, Chars_genned: int, start_time: int, end_time: int)
+            return (False, pTARGET, None, None, None) # Didnt find it so cant return a index, characters genned or times, so they are None
             break
         
         random_chars = rng.choice(pCHARS, pCPC)
@@ -47,7 +48,7 @@ def gen_and_test(pCHARS, pTARGET, pWINSIZE, pCPC, pFLAG):
             pFLAG.set()
             found_index = np.where(identical_check)[0][0]
             fixed_chars_genned = chars_genned + found_index
-            return (True, pTARGET, found_index, fixed_chars_genned, start_time, end_time)
+            return (True, pTARGET,  fixed_chars_genned, start_time, end_time)
             break
         else:
             #print("no match")
@@ -83,13 +84,14 @@ if __name__ == "__main__":
 
         for item in collected_data:
             if item[0] == True:
-                genned_chars = item[3]
-                start = item[4]
-                end = item[5]
+                genned_chars = item[2]
+                start = item[3]
+                end = item[4]
                 print(f"!! Found positive result in process {collected_data.index(item)} !!")
                 print(f"Time to find: {end - start:.2f}s, characters generated: {genned_chars:,} ({convert_to_letter_suffix(genned_chars)})")
                 # Add in an under/over odds thing here (20b pred 5b gen = 4x under. 20b pred, 100b gen = 5x over)
                 # so always do pred / gen, check for if >< 1
+                # 
                 break
     except KeyboardInterrupt as e:
         print("Ended by user manually")
